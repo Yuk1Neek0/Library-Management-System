@@ -1,0 +1,16 @@
+Mini Software Team Challenge - Student Handout
+Objective
+Work as a team to apply real-world software development practices including version control, IDE use, CI/CD concepts, and distributed computing.
+Instructions
+• Form groups of 3–4 students.
+• Create a Git repository (GitHub, GitLab, or local).
+• Assign roles: Developer A, Developer B, Reviewer, Tester.
+• Each group member must create at least one branch and merge it using meaningful commit messages.
+• Develop a simple program (e.g., calculator, greeting app, to‑do list).
+• Choose an IDE: VS Code, IntelliJ IDEA, or Eclipse, and explain your choice.
+• Describe how CI/CD would apply to your project (no need to implement).
+• Choose a distributed computing paradigm (RPC, Message Queue, or Publish‑Subscribe) and explain how your project could scale using it.
+Deliverables
+• Git repository link or uploaded zip file
+• 2–3 minute demo presentation
+• One reflection slide explaining CI/CD and distributed computing

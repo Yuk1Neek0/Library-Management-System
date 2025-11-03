@@ -1,0 +1,223 @@
+Software Requirements Specification (SRS)
+Project Name: Library Management System with DevOps Automation
+Version: 1.0
+Team Members: Sikai Han, Jeremiah Agbebi ,Pritika Pritika, Jakaran Singh
+1. Introduction
+1.1 Purpose
+The purpose of this project is to develop a Library Management System that provides book borrowing, user management, and loan tracking functionalities. The system integrates DevOps automation (CI/CD and monitoring) to ensure continuous delivery and high availability. The intended users include students, teachers (or general readers), and administrators.
+1.2 Scope
+The system is composed of a frontend (React) and a backend (Flask + SQLite) and offers the following features:
+- User registration, login, and role-based access control
+- Book management (add, update, delete, search)
+- Borrowing and returning operations
+- Loan history and status tracking
+- CI/CD automated deployment using Jenkins
+- System monitoring with Nagios
+1.3 Definitions, Acronyms, and Abbreviations
+UI: User Interface
+API: Application Programming Interface
+CI/CD: Continuous Integration / Continuous Delivery
+DevOps: Development and Operations
+1.4 References
+- IEEE SRS Standards
+- Student Knowledge Testing Website SRS
+- Library System with DevOps Automation
+2. Overall Description
+2.1 Product Perspective
+The Library Management System is a standalone web application accessible from modern browsers. It provides core library functions while integrating DevOps practices for continuous delivery and monitoring. Future versions may extend support to multi-institution use.
+2.2 Product Features
+- Book management (CRUD operations)
+- User management with authentication and authorization
+- Borrowing and returning of books
+- Loan and status tracking
+- CI/CD pipeline for automated builds, testing, and deployment
+- Real-time monitoring and alerting with Nagios
+2.3 User Classes and Characteristics
+- Students/Readers: Can search, borrow, and return books.
+- Administrators: Can manage users, books, and loans.
+- Developers/Operators: Maintain system deployment and monitoring.
+2.4 Operating Environment
+- Frontend: React (Vite build)
+- Backend: Flask with SQLite
+- CI/CD: Jenkins
+- Monitoring: Nagios
+- Supported Browsers: Chrome, Firefox, Edge, Safari
+2.5 Constraints
+- Must ensure secure authentication and data handling
+- Compliance with privacy regulations
+- Operates under limited resources (SQLite as DB)
+2.6 Assumptions and Dependencies
+- Users have stable internet access
+- Jenkins and Nagios servers are properly configured
+- Basic computer literacy of end-users
+3. System Features
+The system is divided into four main work packages, each assigned to one team member.
+3.1 Frontend Development (Pritika)
+Feature: User Interface for Library System
+Description: Build React-based frontend for browsing, searching, borrowing books.
+Inputs/Outputs: User input via forms, output via rendered UI.
+Priority: High
+Dependencies: Backend API availability.
+3.2 Backend Development (Sikai)
+Feature: Flask-based REST API with SQLite database
+Description: Manage books, users, and loans; handle authentication.
+Inputs/Outputs: API requests/responses (JSON).
+Priority: High
+Dependencies: Database and frontend integration.
+3.3 DevOps Pipeline (Jeremiah)
+Feature: CI/CD Automation
+Description: Configure Jenkins pipeline for automated builds, testing, and deployments.
+Inputs/Outputs: Build triggers, deployment artifacts.
+Priority: High
+Dependencies: Code repository and server access.
+3.4 Monitoring & Maintenance (Jakaran)
+Feature: Monitoring and System Maintenance
+Description: Configure Nagios for system health monitoring, handle logs and recovery procedures.
+Inputs/Outputs: Monitoring alerts, status reports.
+Priority: Medium
+Dependencies: Running backend services and infrastructure.
+4. External Interface Requirements
+4.1 User Interfaces
+A responsive web interface built with React, providing intuitive navigation for students and administrators.
+4.2 Hardware Interfaces
+Compatible with standard desktops, laptops, and smartphones.
+4.3 Software Interfaces
+REST APIs exposed by Flask backend; SQLite database; Jenkins pipeline; Nagios monitoring.
+4.4 Communication Interfaces
+HTTPS protocol for secure data exchange; Email notifications for account verification (future).
+5. Non-Functional Requirements
+- Performance: Handle at least 200 concurrent users.
+- Security: Secure login, encrypted data storage.
+- Usability: Intuitive and accessible design.
+- Reliability: 99% uptime with monitoring.
+- Scalability: Extendable to multi-institution deployments.
+6. System Models
+ER Diagram
+ 
+System Architecture Diagram
+ 
+
+
+Use Case: Search Books
+ 
+Use Case: Return a Book
+ 
+Use Case: Register & Login
+ 
+
+
+
+
+
+Use Case: Manage Users (Admin)
+ 
+
+
+
+Use Case: Add/Update Book Metadata (Admin)
+ 
+Use Case: Reserve / Place Hold
+ 
+7. Use Cases
+Use Case 1: Borrow a Book
+Actors: Student, System
+Preconditions: Student logged in
+Trigger: Student selects a book to borrow
+Steps: 
+1. Student searches and selects a book
+2. System checks availability
+3. Student confirms borrowing
+4. System updates loan record
+Postconditions: Book marked as borrowed
+Exceptions: Book unavailable, network issues
+Use Case 2: Add a New Book
+Actors: Administrator, System
+Preconditions: Administrator logged in
+Trigger: Admin selects 'Add Book'
+Steps: 
+1. Admin enters book details
+2. System validates and stores information
+Postconditions: Book added to database
+Exceptions: Invalid input, DB error
+Additional Use Cases
+Use Case 3: Search Books
+Actors: Student/Reader, System
+Preconditions: User is logged in (or guest if allowed)
+Trigger: User types keywords or filters
+Main Flow:
+1. User enters keywords and selects filters (category, author, availability)
+2. System queries the catalog
+3. System displays paginated results with availability and basic metadata
+Postconditions: Results list displayed; search state retained for navigation
+Exceptions: Network error; invalid filters
+Use Case 4: Return a Book
+Actors: Student/Reader, System
+Preconditions: User has an active loan
+Trigger: User clicks 'Return' on a borrowed item
+Main Flow:
+1. System validates the loan record and due date
+2. System marks the item as returned and updates inventory
+3. System calculates any fines (future) and closes the loan
+Postconditions: Loan closed; book marked available
+Exceptions: Loan not found; already returned; DB error
+Use Case 5: Register & Login
+Actors: User, System
+Preconditions: System is reachable; registration open
+Trigger: User selects 'Register' or 'Login'
+Main Flow:
+1. User fills registration form or enters credentials
+2. System validates input and creates session/JWT
+3. User redirected to dashboard
+Postconditions: Authenticated session established
+Exceptions: Weak password; duplicate email; invalid credentials
+Use Case 6: Manage Users (Admin)
+Actors: Administrator, System
+Preconditions: Admin is authenticated with proper role
+Trigger: Admin selects 'Users' from dashboard
+Main Flow:
+1. Admin searches/filters users
+2. Admin creates/edits/deactivates users and assigns roles
+3. System persists changes
+Postconditions: User records updated; audit entry created (future)
+Exceptions: Insufficient permissions; validation error
+Use Case 7: Add/Update Book Metadata (Admin)
+Actors: Administrator, System
+Preconditions: Admin is authenticated
+Trigger: Admin chooses 'Add Book' or 'Edit' on a title
+Main Flow:
+1. Admin enters/updates title, author, ISBN, tags, copies
+2. System validates uniqueness (e.g., ISBN)
+3. System stores metadata and updates inventory count
+Postconditions: Catalog updated; book visible in searches
+Exceptions: Duplicate ISBN; missing mandatory fields
+Use Case 8: Reserve / Place Hold
+Actors: Student/Reader, System
+Preconditions: Book is currently unavailable
+Trigger: User clicks 'Place Hold'
+Main Flow:
+1. System creates a hold record in FIFO order
+2. When book is returned, system notifies next user (future email)
+3. User has limited time window to borrow
+Postconditions: Hold record created
+Exceptions: User exceeds hold limit; book becomes available before hold completes
+Use Case 9: CI/CD Deploy (DevOps)
+Actors: [Member C] Jenkins, System
+Preconditions: Repo has valid pipeline configuration
+Trigger: Commit pushed to main/deploy branch
+Main Flow:
+1. Jenkins checks out code
+2. Builds frontend and runs backend tests
+3. Packages and deploys artifacts
+4. Runs smoke tests on /health
+Postconditions: New version deployed successfully
+Exceptions: Build failure; smoke test fails; rollback triggered
+Use Case 10: Health Check & Alerting (Monitoring)
+Actors: [Member D] Nagios, System
+Preconditions: Monitoring targets are registered
+Trigger: Nagios scheduled check
+Main Flow:
+1. Nagios probes /health endpoint
+2. If latency/high error rate, alert generated
+3. Operator investigates and remediates
+Postconditions: System health tracked; MTTR reduced
+Exceptions: False positives; network partition

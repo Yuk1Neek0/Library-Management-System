@@ -1,0 +1,48 @@
+.my-loans-page {
+  padding: 20px 0;
+}
+
+.my-loans-page h1 {
+  margin-bottom: 24px;
+  color: #2c3e50;
+}
+
+.loans-section {
+  margin-bottom: 24px;
+}
+
+.loans-section h2 {
+  margin-bottom: 20px;
+  color: #2c3e50;
+  font-size: 1.3rem;
+}
+
+.no-loans {
+  color: #666;
+  text-align: center;
+  padding: 24px;
+  font-style: italic;
+}
+
+.overdue-row {
+  background-color: #fff5f5;
+}
+
+.overdue-row:hover {
+  background-color: #ffe5e5 !important;
+}
+
+.ml-2 {
+  margin-left: 8px;
+}
+
+@media (max-width: 768px) {
+  .table {
+    font-size: 0.85rem;
+  }
+
+  .table th,
+  .table td {
+    padding: 8px;
+  }
+}
