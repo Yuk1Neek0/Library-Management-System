@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, get_jwt
 from datetime import datetime, timedelta
 import hashlib
 from database import get_db, init_db
@@ -14,18 +14,32 @@ jwt = JWTManager(app)
 # JWT error handlers
 @jwt.expired_token_loader
 def expired_token_callback(jwt_header, jwt_payload):
+    print(f"[JWT] Token expired: {jwt_payload}")
     return jsonify({'error': 'Token has expired'}), 401
 
 @jwt.invalid_token_loader
 def invalid_token_callback(error):
-    return jsonify({'error': 'Invalid token'}), 401
+    print(f"[JWT] Invalid token error: {error}")
+    return jsonify({'error': 'Invalid token', 'details': str(error)}), 401
 
 @jwt.unauthorized_loader
 def unauthorized_callback(error):
+    print(f"[JWT] Unauthorized error: {error}")
     return jsonify({'error': 'Missing authorization token'}), 401
 
 # Initialize database
 init_db()
+
+# Helper function to get current user from JWT
+def get_current_user_from_jwt():
+    """Get user info from JWT token"""
+    user_id = get_jwt_identity()  # This is now a string
+    claims = get_jwt()  # Get additional claims
+    return {
+        'user_id': int(user_id),
+        'email': claims.get('email'),
+        'role': claims.get('role')
+    }
 
 # Health check endpoint
 @app.route('/health', methods=['GET'])
@@ -62,7 +76,10 @@ def register():
         conn.commit()
         user_id = cursor.lastrowid
 
-        access_token = create_access_token(identity={'user_id': user_id, 'email': email, 'role': role})
+        access_token = create_access_token(
+            identity=str(user_id),
+            additional_claims={'email': email, 'role': role}
+        )
 
         return jsonify({
             'message': 'User registered successfully',
@@ -100,11 +117,10 @@ def login():
     if not user:
         return jsonify({'error': 'Invalid credentials'}), 401
 
-    access_token = create_access_token(identity={
-        'user_id': user['id'],
-        'email': user['email'],
-        'role': user['role']
-    })
+    access_token = create_access_token(
+        identity=str(user['id']),
+        additional_claims={'email': user['email'], 'role': user['role']}
+    )
 
     return jsonify({
         'access_token': access_token,
@@ -120,7 +136,7 @@ def login():
 @jwt_required()
 def get_current_user():
     """Get current user information"""
-    current_user = get_jwt_identity()
+    current_user = get_current_user_from_jwt()
     conn = get_db()
     cursor = conn.cursor()
 
@@ -193,7 +209,7 @@ def get_book(book_id):
 @jwt_required()
 def add_book():
     """Add a new book (admin only)"""
-    current_user = get_jwt_identity()
+    current_user = get_current_user_from_jwt()
 
     if current_user['role'] != 'admin':
         return jsonify({'error': 'Admin access required'}), 403
@@ -236,7 +252,7 @@ def add_book():
 @jwt_required()
 def update_book(book_id):
     """Update a book (admin only)"""
-    current_user = get_jwt_identity()
+    current_user = get_current_user_from_jwt()
 
     if current_user['role'] != 'admin':
         return jsonify({'error': 'Admin access required'}), 403
@@ -281,7 +297,7 @@ def update_book(book_id):
 @jwt_required()
 def delete_book(book_id):
     """Delete a book (admin only)"""
-    current_user = get_jwt_identity()
+    current_user = get_current_user_from_jwt()
 
     if current_user['role'] != 'admin':
         return jsonify({'error': 'Admin access required'}), 403
@@ -305,7 +321,7 @@ def delete_book(book_id):
 @jwt_required()
 def get_loans():
     """Get loans (all for admin, own for students)"""
-    current_user = get_jwt_identity()
+    current_user = get_current_user_from_jwt()
 
     conn = get_db()
     cursor = conn.cursor()
@@ -336,7 +352,7 @@ def get_loans():
 @jwt_required()
 def borrow_book():
     """Borrow a book"""
-    current_user = get_jwt_identity()
+    current_user = get_current_user_from_jwt()
     data = request.get_json()
 
     if not data or not data.get('book_id'):
@@ -400,7 +416,7 @@ def borrow_book():
 @jwt_required()
 def return_book(loan_id):
     """Return a borrowed book"""
-    current_user = get_jwt_identity()
+    current_user = get_current_user_from_jwt()
 
     conn = get_db()
     cursor = conn.cursor()
@@ -444,7 +460,7 @@ def return_book(loan_id):
 @jwt_required()
 def get_users():
     """Get all users (admin only)"""
-    current_user = get_jwt_identity()
+    current_user = get_current_user_from_jwt()
 
     if current_user['role'] != 'admin':
         return jsonify({'error': 'Admin access required'}), 403
@@ -462,7 +478,7 @@ def get_users():
 @jwt_required()
 def update_user(user_id):
     """Update user role (admin only)"""
-    current_user = get_jwt_identity()
+    current_user = get_current_user_from_jwt()
 
     if current_user['role'] != 'admin':
         return jsonify({'error': 'Admin access required'}), 403
@@ -489,7 +505,7 @@ def update_user(user_id):
 @jwt_required()
 def get_stats():
     """Get system statistics (admin only)"""
-    current_user = get_jwt_identity()
+    current_user = get_current_user_from_jwt()
 
     if current_user['role'] != 'admin':
         return jsonify({'error': 'Admin access required'}), 403

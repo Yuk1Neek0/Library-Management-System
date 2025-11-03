@@ -33,13 +33,17 @@ def test_get_books(token):
     headers = {
         'Authorization': f'Bearer {token}'
     }
+    print(f"Sending request with headers: {headers}")
     response = requests.get(f'{BASE_URL}/books', headers=headers)
     print(f"Get Books: {response.status_code}")
     if response.status_code == 200:
         books = response.json()
         print(f"Found {len(books)} books")
     else:
-        print(f"Error: {response.json()}")
+        error_data = response.json()
+        print(f"Error: {error_data}")
+        if 'details' in error_data:
+            print(f"Details: {error_data['details']}")
     print()
 
 def test_get_loans(token):
