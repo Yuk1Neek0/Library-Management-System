@@ -35,3 +35,8 @@ Thumbs.db
 # Environment variables
 .env
 .env.local
+
+# Documentation files (keep out of repo)
+*.docx
+*SRS*.txt
+*Challenge*.txt
