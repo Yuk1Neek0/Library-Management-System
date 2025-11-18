@@ -67,14 +67,17 @@ def auth_headers(client):
 
 @pytest.fixture
 def sample_book():
-    """Sample book data for testing."""
+    """Sample book data for testing with unique ISBN for each test."""
+    import random
+    # Generate unique ISBN for each test to avoid UNIQUE constraint violations
+    unique_isbn = f'978-0-{random.randint(100000, 999999)}-{random.randint(10, 99)}-{random.randint(0, 9)}'
     return {
-        'isbn': '978-0-123456-78-9',
+        'isbn': unique_isbn,
         'title': 'Test Book',
         'author': 'Test Author',
         'category': 'Fiction',
         'total_copies': 5,
-        'available_copies': 5,  # Add available_copies to match total_copies
+        'available_copies': 5,
         'description': 'A test book for unit testing'
     }
 
