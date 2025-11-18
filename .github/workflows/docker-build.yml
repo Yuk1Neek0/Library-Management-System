@@ -127,13 +127,42 @@ jobs:
 
       - name: Wait for services to be healthy
         run: |
-          echo "Waiting for backend to be healthy..."
-          timeout 120 sh -c 'until docker compose ps | grep -q "healthy.*backend"; do sleep 2; done'
-          echo "Backend is healthy!"
+          echo "Waiting for services to start and become healthy..."
+          echo "This may take up to 2 minutes..."
 
-          echo "Waiting for frontend to be healthy..."
-          timeout 120 sh -c 'until docker compose ps | grep -q "healthy.*frontend"; do sleep 2; done'
-          echo "Frontend is healthy!"
+          # Wait for backend to be healthy (with detailed status output)
+          for i in {1..60}; do
+            echo "Attempt $i/60: Checking backend status..."
+            docker compose ps
+            if docker compose ps | grep -q "healthy.*backend"; then
+              echo "✓ Backend is healthy!"
+              break
+            fi
+            if [ $i -eq 60 ]; then
+              echo "✗ Backend failed to become healthy after 2 minutes"
+              docker compose logs backend
+              exit 1
+            fi
+            sleep 2
+          done
+
+          # Wait for frontend to be healthy
+          for i in {1..60}; do
+            echo "Attempt $i/60: Checking frontend status..."
+            docker compose ps
+            if docker compose ps | grep -q "healthy.*frontend"; then
+              echo "✓ Frontend is healthy!"
+              break
+            fi
+            if [ $i -eq 60 ]; then
+              echo "✗ Frontend failed to become healthy after 2 minutes"
+              docker compose logs frontend
+              exit 1
+            fi
+            sleep 2
+          done
+
+          echo "✓ All services are healthy!"
 
       - name: Test backend health endpoint
         run: |
