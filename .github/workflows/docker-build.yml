@@ -120,19 +120,19 @@ jobs:
           echo "JWT_SECRET_KEY=test-jwt-secret" >> .env
 
       - name: Build with Docker Compose
-        run: docker-compose build
+        run: docker compose build
 
       - name: Start services with Docker Compose
-        run: docker-compose up -d
+        run: docker compose up -d
 
       - name: Wait for services to be healthy
         run: |
           echo "Waiting for backend to be healthy..."
-          timeout 60 sh -c 'until docker-compose ps | grep -q "healthy.*backend"; do sleep 2; done'
+          timeout 60 sh -c 'until docker compose ps | grep -q "healthy.*backend"; do sleep 2; done'
           echo "Backend is healthy!"
 
           echo "Waiting for frontend to be healthy..."
-          timeout 60 sh -c 'until docker-compose ps | grep -q "healthy.*frontend"; do sleep 2; done'
+          timeout 60 sh -c 'until docker compose ps | grep -q "healthy.*frontend"; do sleep 2; done'
           echo "Frontend is healthy!"
 
       - name: Test backend health endpoint
@@ -145,8 +145,8 @@ jobs:
 
       - name: Show container logs
         if: always()
-        run: docker-compose logs
+        run: docker compose logs
 
       - name: Stop services
         if: always()
-        run: docker-compose down -v
+        run: docker compose down -v
