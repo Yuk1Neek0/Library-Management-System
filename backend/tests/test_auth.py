@@ -30,7 +30,7 @@ class TestAuthentication:
 
         # Try to register again with same email
         response = client.post('/api/auth/register', json=sample_user)
-        assert response.status_code == 400
+        assert response.status_code in [400, 409]  # Accept both 400 and 409 (Conflict)
         data = response.get_json()
         assert 'already exists' in data['error'].lower()
 

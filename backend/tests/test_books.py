@@ -41,7 +41,11 @@ class TestBooks:
         """Test retrieving a single book by ID"""
         # First create a book
         create_response = client.post('/api/books', json=sample_book, headers=auth_headers)
-        book_id = create_response.get_json()['id']
+        assert create_response.status_code == 201
+        book_data = create_response.get_json()
+        assert book_data is not None
+        assert 'id' in book_data
+        book_id = book_data['id']
 
         # Then retrieve it
         response = client.get(f'/api/books/{book_id}', headers=auth_headers)
@@ -59,7 +63,11 @@ class TestBooks:
         """Test updating an existing book"""
         # Create a book first
         create_response = client.post('/api/books', json=sample_book, headers=auth_headers)
-        book_id = create_response.get_json()['id']
+        assert create_response.status_code == 201
+        book_data = create_response.get_json()
+        assert book_data is not None
+        assert 'id' in book_data
+        book_id = book_data['id']
 
         # Update the book
         update_data = {
@@ -76,7 +84,11 @@ class TestBooks:
         """Test deleting a book"""
         # Create a book first
         create_response = client.post('/api/books', json=sample_book, headers=auth_headers)
-        book_id = create_response.get_json()['id']
+        assert create_response.status_code == 201
+        book_data = create_response.get_json()
+        assert book_data is not None
+        assert 'id' in book_data
+        book_id = book_data['id']
 
         # Delete the book
         response = client.delete(f'/api/books/{book_id}', headers=auth_headers)

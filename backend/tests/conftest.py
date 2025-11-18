@@ -74,6 +74,7 @@ def sample_book():
         'author': 'Test Author',
         'category': 'Fiction',
         'total_copies': 5,
+        'available_copies': 5,  # Add available_copies to match total_copies
         'description': 'A test book for unit testing'
     }
 
