@@ -2,9 +2,9 @@ name: Automated Testing
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, CI/CD ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, develop, CI/CD ]
 
 jobs:
   test-backend:
