@@ -134,7 +134,7 @@ jobs:
           for i in {1..60}; do
             echo "Attempt $i/60: Checking backend status..."
             docker compose ps
-            if docker compose ps | grep -q "healthy.*backend"; then
+            if docker compose ps | grep "backend" | grep -q "(healthy)"; then
               echo "✓ Backend is healthy!"
               break
             fi
@@ -150,7 +150,7 @@ jobs:
           for i in {1..60}; do
             echo "Attempt $i/60: Checking frontend status..."
             docker compose ps
-            if docker compose ps | grep -q "healthy.*frontend"; then
+            if docker compose ps | grep "frontend" | grep -q "(healthy)"; then
               echo "✓ Frontend is healthy!"
               break
             fi
