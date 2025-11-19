@@ -57,6 +57,22 @@ Render will read your `render.yaml` file and show you:
 
 Click "Apply" to create both services.
 
+### Step 4.5: Configure Frontend Environment Variable (CRITICAL!)
+
+After both services are created, you need to manually set the frontend's API URL:
+
+1. Wait for the **backend** service to finish deploying (it will show a green checkmark)
+2. Copy the backend URL (something like `https://library-backend-xxxxx.onrender.com`)
+3. Go to the **frontend** service in Render dashboard
+4. Click "Environment" in the left sidebar
+5. Find or add the environment variable:
+   - **Key**: `VITE_API_URL`
+   - **Value**: `https://library-backend-xxxxx.onrender.com` (paste your actual backend URL)
+6. Click "Save Changes"
+7. Render will automatically trigger a rebuild of the frontend
+
+**Why is this necessary?** Vite bakes environment variables into the JavaScript bundle at BUILD time. The frontend needs to know the backend URL during the Docker build process, not at runtime.
+
 ### Step 5: Wait for Deployment
 
 Render will now:

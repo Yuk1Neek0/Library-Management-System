@@ -34,6 +34,8 @@ services:
           type: web
           name: library-backend
           envVarKey: RENDER_EXTERNAL_URL
+    # Pass VITE_API_URL as build argument (required for Vite at build time)
+    dockerCommand: ""
     autoDeploy: true
     # Free tier settings
     plan: free
