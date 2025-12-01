@@ -1,0 +1,181 @@
+name: Docker Build and Push
+
+on:
+  push:
+    branches: [ main, CI/CD ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main, CI/CD ]
+
+env:
+  REGISTRY: ghcr.io
+  BACKEND_IMAGE_NAME: ${{ github.repository }}-backend
+  FRONTEND_IMAGE_NAME: ${{ github.repository }}-frontend
+
+jobs:
+  build-backend:
+    name: Build Backend Docker Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.BACKEND_IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+
+      - name: Build and push Backend Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.backend
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  build-frontend:
+    name: Build Frontend Docker Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.FRONTEND_IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+
+      - name: Build and push Frontend Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.frontend
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  test-docker-compose:
+    name: Test Docker Compose
+    runs-on: ubuntu-latest
+    needs: [build-backend, build-frontend]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create .env file
+        run: |
+          cp .env.example .env
+          echo "SECRET_KEY=test-secret-key" >> .env
+          echo "JWT_SECRET_KEY=test-jwt-secret" >> .env
+
+      - name: Build with Docker Compose
+        run: docker compose build
+
+      - name: Start services with Docker Compose
+        run: docker compose up -d
+
+      - name: Wait for services to be healthy
+        run: |
+          echo "Waiting for services to start and become healthy..."
+          echo "This may take up to 2 minutes..."
+
+          # Wait for backend to be healthy (with detailed status output)
+          for i in {1..60}; do
+            echo "Attempt $i/60: Checking backend status..."
+            docker compose ps
+            if docker compose ps | grep "backend" | grep -q "(healthy)"; then
+              echo "✓ Backend is healthy!"
+              break
+            fi
+            if [ $i -eq 60 ]; then
+              echo "✗ Backend failed to become healthy after 2 minutes"
+              docker compose logs backend
+              exit 1
+            fi
+            sleep 2
+          done
+
+          # Wait for frontend to be healthy
+          for i in {1..60}; do
+            echo "Attempt $i/60: Checking frontend status..."
+            docker compose ps
+            if docker compose ps | grep "frontend" | grep -q "(healthy)"; then
+              echo "✓ Frontend is healthy!"
+              break
+            fi
+            if [ $i -eq 60 ]; then
+              echo "✗ Frontend failed to become healthy after 2 minutes"
+              docker compose logs frontend
+              exit 1
+            fi
+            sleep 2
+          done
+
+          echo "✓ All services are healthy!"
+
+      - name: Test backend health endpoint
+        run: |
+          curl -f http://localhost:5000/health || exit 1
+
+      - name: Test frontend
+        run: |
+          curl -f http://localhost:80 || exit 1
+
+      - name: Show container logs
+        if: always()
+        run: docker compose logs
+
+      - name: Stop services
+        if: always()
+        run: docker compose down -v

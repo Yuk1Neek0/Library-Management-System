@@ -1,0 +1,48 @@
+# Render Blueprint for Library Management System
+# This file defines how to deploy your application on Render
+
+services:
+  # Backend Service (Flask API)
+  - type: web
+    name: library-backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile.backend
+    dockerContext: .
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        value: sqlite:///data/library.db
+    healthCheckPath: /health
+    autoDeploy: true
+    # Free tier settings
+    plan: free
+
+  # Frontend Service (React + Nginx)
+  - type: web
+    name: library-frontend
+    runtime: docker
+    dockerfilePath: ./Dockerfile.frontend
+    dockerContext: .
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: library-backend
+          envVarKey: RENDER_EXTERNAL_URL
+    # Pass VITE_API_URL as build argument (required for Vite at build time)
+    dockerCommand: ""
+    autoDeploy: true
+    # Free tier settings
+    plan: free
+
+# Database persistence (if you upgrade from free tier)
+# databases:
+#   - name: library-db
+#     databaseName: library
+#     user: library_user
+#     plan: free

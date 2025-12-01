@@ -1,0 +1,12 @@
+[MASTER]
+ignore=venv,.venv,migrations
+
+[MESSAGES CONTROL]
+disable=C0111,R0903,C0103,W0703,R0913,R0801
+
+[FORMAT]
+max-line-length=127
+
+[DESIGN]
+max-args=7
+max-attributes=10
